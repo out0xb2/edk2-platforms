@@ -1,7 +1,7 @@
 ### @file
 # Component information file for the Platform Init PEI module.
 #
-# Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2017 - 2019, Intel Corporation. All rights reserved.<BR>
 #
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -23,15 +23,14 @@
   BaseMemoryLib
   HobLib
   PeiServicesLib
-  MtrrLib
   BoardInitLib
   TestPointCheckLib
+  SetCacheMtrrLib
 
 [Packages]
   MinPlatformPkg/MinPlatformPkg.dec
   MdeModulePkg/MdeModulePkg.dec
   MdePkg/MdePkg.dec
-  UefiCpuPkg/UefiCpuPkg.dec
 
 [Sources]
   PlatformInitPostMem.c
@@ -44,14 +43,6 @@
 
 [Protocols]
 
-[Guids]
-  gEfiSmmPeiSmramMemoryReserveGuid              ## CONSUMES
-
 [Depex]
   gEfiPeiMemoryDiscoveredPpiGuid
 
-[Pcd]
-  gMinPlatformPkgTokenSpaceGuid.PcdPciReservedMemAbove4GBBase
-  gMinPlatformPkgTokenSpaceGuid.PcdPciReservedMemAbove4GBLimit
-  gMinPlatformPkgTokenSpaceGuid.PcdPciReservedPMemAbove4GBBase
-  gMinPlatformPkgTokenSpaceGuid.PcdPciReservedPMemAbove4GBLimit

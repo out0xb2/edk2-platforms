@@ -1,7 +1,7 @@
 /** @file
   BMC Event Log functions.
 
-Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2018 - 2019, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -59,6 +59,7 @@ Returns:
   IPMI_CLEAR_SEL_RESPONSE  ClearSelResponse;
 
   Counter   = 0x200;
+  ZeroMem (&ClearSelResponse, sizeof(ClearSelResponse));
 
   while (TRUE) {
     ZeroMem (&ClearSel, sizeof(ClearSel));
@@ -131,7 +132,7 @@ Returns:
         ElogStat = 1;
       }
 
-      CopyMem (&SetBmcGlobalEnables, (UINT8 *)&GetBmcGlobalEnables + sizeof(UINT8), sizeof(UINT8));
+      CopyMem (&SetBmcGlobalEnables, (UINT8 *)&GetBmcGlobalEnables + 1, sizeof(UINT8));
       SetBmcGlobalEnables.SetEnables.Bits.SystemEventLogging = ElogStat;
 
       Status = IpmiSetBmcGlobalEnables (&SetBmcGlobalEnables, &CompletionCode);
@@ -170,6 +171,7 @@ Returns:
 }
 
 EFI_STATUS
+EFIAPI
 InitializeBmcElogLayer (
   IN EFI_HANDLE             ImageHandle,
   IN EFI_SYSTEM_TABLE       *SystemTable

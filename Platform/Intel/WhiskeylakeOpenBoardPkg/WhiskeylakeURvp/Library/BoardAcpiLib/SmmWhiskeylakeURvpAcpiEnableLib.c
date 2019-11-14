@@ -1,5 +1,5 @@
 /** @file
-  Platform Hook Library instances
+  Whiskey Lake U RVP SMM Board ACPI Enable library
 
 
   Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
@@ -15,7 +15,7 @@
 #include <Library/PcdLib.h>
 #include <Library/DebugLib.h>
 
-#include <WhiskeylakeURvpId.h>
+#include <PlatformBoardId.h>
 
 EFI_STATUS
 EFIAPI

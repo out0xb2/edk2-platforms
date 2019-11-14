@@ -1,7 +1,7 @@
 ### @file
-# Platform Hook Library instance for SandyBridge Mobile/Desktop CRB.
+# Kaby Lake RVP 3 Multi-Board ACPI Support library
 #
-# Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2017 - 2019, Intel Corporation. All rights reserved.<BR>
 #
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -34,14 +34,15 @@
   MinPlatformPkg/MinPlatformPkg.dec
   KabylakeOpenBoardPkg/OpenBoardPkg.dec
   KabylakeSiliconPkg/SiPkg.dec
+  BoardModulePkg/BoardModulePkg.dec
 
 [Pcd]
-  gBoardModuleTokenSpaceGuid.PcdPs2KbMsEnable
-  gBoardModuleTokenSpaceGuid.PcdPciExpNative
-  gBoardModuleTokenSpaceGuid.PcdNativeAspmEnable
-  gBoardModuleTokenSpaceGuid.PcdLowPowerS0Idle
-  gBoardModuleTokenSpaceGuid.PcdAcpiGnvsAddress
-  
+  gBoardModulePkgTokenSpaceGuid.PcdPs2KbMsEnable
+  gKabylakeOpenBoardPkgTokenSpaceGuid.PcdPciExpNative
+  gKabylakeOpenBoardPkgTokenSpaceGuid.PcdNativeAspmEnable
+  gKabylakeOpenBoardPkgTokenSpaceGuid.PcdLowPowerS0Idle
+  gKabylakeOpenBoardPkgTokenSpaceGuid.PcdAcpiGnvsAddress
+
 [Sources]
   DxeKabylakeRvp3AcpiTableLib.c
   DxeMultiBoardAcpiSupportLib.c

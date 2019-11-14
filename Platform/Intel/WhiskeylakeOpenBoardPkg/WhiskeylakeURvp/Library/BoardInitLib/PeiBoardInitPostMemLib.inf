@@ -19,11 +19,12 @@
 
 [LibraryClasses]
   BaseLib
-  DebugLib
   BaseMemoryLib
+  DebugLib
+  GpioExpanderLib
+  GpioLib
   HdaVerbTableLib
   MemoryAllocationLib
-  GpioExpanderLib
   PcdLib
 
 [Packages]
@@ -37,17 +38,18 @@
 [Sources]
   PeiWhiskeylakeURvpInitPostMemLib.c
   PeiBoardInitPostMemLib.c
+  GpioTableDefault.c
+  GpioTableWhiskeylakeUDdr4Rvp.c
 
 [Pcd]
-  gBoardModuleTokenSpaceGuid.PcdBoardGpioTable
-  gBoardModuleTokenSpaceGuid.PcdBoardGpioTableSize
-  gBoardModuleTokenSpaceGuid.PcdBoardGpioTableTouchPanel
+  gWhiskeylakeOpenBoardPkgTokenSpaceGuid.PcdBoardGpioTable
+  gWhiskeylakeOpenBoardPkgTokenSpaceGuid.PcdBoardGpioTableSize
+  gWhiskeylakeOpenBoardPkgTokenSpaceGuid.PcdBoardGpioTableTouchPanel
 
-  gBoardModuleTokenSpaceGuid.PcdGpioExpanderTable
-  gBoardModuleTokenSpaceGuid.PcdGpioExpanderTableSize
+  gWhiskeylakeOpenBoardPkgTokenSpaceGuid.PcdGpioExpanderTable
+  gWhiskeylakeOpenBoardPkgTokenSpaceGuid.PcdGpioExpanderTableSize
 
-  gBoardModuleTokenSpaceGuid.PcdBoardUcmcGpioTable
-  gBoardModuleTokenSpaceGuid.PcdBoardUcmcGpioTableSize
+  gWhiskeylakeOpenBoardPkgTokenSpaceGuid.PcdBoardUcmcGpioTable
+  gWhiskeylakeOpenBoardPkgTokenSpaceGuid.PcdBoardUcmcGpioTableSize
 
   gEfiSecurityPkgTokenSpaceGuid.PcdTpm2CurrentIrqNum
-

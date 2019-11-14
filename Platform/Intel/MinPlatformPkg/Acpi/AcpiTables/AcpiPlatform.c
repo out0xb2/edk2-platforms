@@ -1,7 +1,7 @@
 /** @file
   ACPI Platform Driver
 
-Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2017 - 2019, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -354,7 +354,7 @@ SortCpuLocalApicInTable (
 
       if(MAX_CPU_NUM <= Index) {
         DEBUG ((EFI_D_ERROR, "Asserting the SortCpuLocalApicInTable Index Bufferflow\n"));
-        ASSERT_EFI_ERROR(EFI_INVALID_PARAMETER);
+        return EFI_INVALID_PARAMETER;
       }
 
       TempVal = mCpuApicIdOrderTable[Index].ApicId;
@@ -867,12 +867,18 @@ InstallMadtFromScratch (
   UINT32                                              PcIoApicMask;
   UINTN                                               PcIoApicIndex;
 
+  MadtStructs = NULL;
+  NewMadtTable = NULL;
+  MaxMadtStructCount = 0;
+
   DetectApicIdMap();
 
   // Call for Local APIC ID Reorder
-  SortCpuLocalApicInTable ();
-
-  NewMadtTable = NULL;
+  Status = SortCpuLocalApicInTable ();
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "SortCpuLocalApicInTable failed: %r\n", Status));
+    goto Done;
+  }
 
   MaxMadtStructCount = (UINT32) (
     MAX_CPU_NUM +    // processor local APIC structures
@@ -1049,7 +1055,7 @@ InstallMadtFromScratch (
   LocalApciNmiStruct.Type   = EFI_ACPI_4_0_LOCAL_APIC_NMI;
   LocalApciNmiStruct.Length = sizeof (EFI_ACPI_4_0_LOCAL_APIC_NMI_STRUCTURE);
   LocalApciNmiStruct.AcpiProcessorId = 0xFF;      // Applies to all processors
-  LocalApciNmiStruct.Flags           = 0x000D;    // Flags - Level-tiggered, Active High
+  LocalApciNmiStruct.Flags           = 0x0005;    // Flags - Edge-tiggered, Active High
   LocalApciNmiStruct.LocalApicLint   = 0x1;
 
   ASSERT (MadtStructsIndex < MaxMadtStructCount);
@@ -1066,24 +1072,26 @@ InstallMadtFromScratch (
   //
   // Build Local x2APIC NMI Structure
   //
-  LocalX2ApicNmiStruct.Type   = EFI_ACPI_4_0_LOCAL_X2APIC_NMI;
-  LocalX2ApicNmiStruct.Length = sizeof (EFI_ACPI_4_0_LOCAL_X2APIC_NMI_STRUCTURE);
-  LocalX2ApicNmiStruct.Flags  = 0x000D;                // Flags - Level-tiggered, Active High
-  LocalX2ApicNmiStruct.AcpiProcessorUid = 0xFFFFFFFF;  // Applies to all processors
-  LocalX2ApicNmiStruct.LocalX2ApicLint  = 0x01;
-  LocalX2ApicNmiStruct.Reserved[0] = 0x00;
-  LocalX2ApicNmiStruct.Reserved[1] = 0x00;
-  LocalX2ApicNmiStruct.Reserved[2] = 0x00;
+  if (mX2ApicEnabled) {
+    LocalX2ApicNmiStruct.Type   = EFI_ACPI_4_0_LOCAL_X2APIC_NMI;
+    LocalX2ApicNmiStruct.Length = sizeof (EFI_ACPI_4_0_LOCAL_X2APIC_NMI_STRUCTURE);
+    LocalX2ApicNmiStruct.Flags  = 0x000D;                // Flags - Level-tiggered, Active High
+    LocalX2ApicNmiStruct.AcpiProcessorUid = 0xFFFFFFFF;  // Applies to all processors
+    LocalX2ApicNmiStruct.LocalX2ApicLint  = 0x01;
+    LocalX2ApicNmiStruct.Reserved[0] = 0x00;
+    LocalX2ApicNmiStruct.Reserved[1] = 0x00;
+    LocalX2ApicNmiStruct.Reserved[2] = 0x00;
 
-  ASSERT (MadtStructsIndex < MaxMadtStructCount);
-  Status = CopyStructure (
-    &MadtTableHeader.Header,
-    (STRUCTURE_HEADER *) &LocalX2ApicNmiStruct,
-    &MadtStructs[MadtStructsIndex++]
-    );
-  if (EFI_ERROR (Status)) {
-    DEBUG ((EFI_D_ERROR, "CopyMadtStructure (x2APIC NMI) failed: %r\n", Status));
-    goto Done;
+    ASSERT (MadtStructsIndex < MaxMadtStructCount);
+    Status = CopyStructure (
+      &MadtTableHeader.Header,
+      (STRUCTURE_HEADER *) &LocalX2ApicNmiStruct,
+      &MadtStructs[MadtStructsIndex++]
+      );
+    if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_ERROR, "CopyMadtStructure (x2APIC NMI) failed: %r\n", Status));
+      goto Done;
+    }
   }
 
   //
@@ -1115,13 +1123,14 @@ Done:
   //
   // Free memory
   //
-  for (MadtStructsIndex = 0; MadtStructsIndex < MaxMadtStructCount; MadtStructsIndex++) {
-    if (MadtStructs[MadtStructsIndex] != NULL) {
-      FreePool (MadtStructs[MadtStructsIndex]);
+  if (MadtStructs != NULL) {
+    for (MadtStructsIndex = 0; MadtStructsIndex < MaxMadtStructCount; MadtStructsIndex++) {
+      if (MadtStructs[MadtStructsIndex] != NULL) {
+        FreePool (MadtStructs[MadtStructsIndex]);
+      }
     }
+    FreePool (MadtStructs);
   }
-
-  FreePool (MadtStructs);
 
   if (NewMadtTable != NULL) {
     FreePool (NewMadtTable);
@@ -1167,7 +1176,7 @@ InstallMcfgFromScratch (
   //
   // Set MCFG table "Length" field based on the number of PCIe segments enumerated so far
   //
-  McfgTable->Header.Length = (UINT32)(sizeof (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER) + 
+  McfgTable->Header.Length = (UINT32)(sizeof (EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_BASE_ADDRESS_TABLE_HEADER) +
                                       sizeof (EFI_ACPI_MEMORY_MAPPED_ENHANCED_CONFIGURATION_SPACE_BASE_ADDRESS_ALLOCATION_STRUCTURE) * SegmentCount);
 
   Segment = (VOID *)(McfgTable + 1);
@@ -1459,7 +1468,7 @@ UpdateLocalTable (
 
   for (Index = 0; Index < sizeof(mLocalTable)/sizeof(mLocalTable[0]); Index++) {
     CurrentTable = mLocalTable[Index];
-  
+
     PlatformUpdateTables (CurrentTable, &Version);
 
     TableHandle = 0;

@@ -104,6 +104,8 @@ def pre_build(build_config, build_type="DEBUG", silent=False, toolchain=None):
                                                 config["WORKSPACE_PLATFORM"])
     config["WORKSPACE_SILICON"] = os.path.join(config["WORKSPACE"],
                                                config["WORKSPACE_SILICON"])
+    config["WORKSPACE_DRIVERS"] = os.path.join(config["WORKSPACE"],
+                                               config["WORKSPACE_DRIVERS"])
     config["WORKSPACE_PLATFORM_BIN"] = \
         os.path.join(config["WORKSPACE"], config["WORKSPACE_PLATFORM_BIN"])
     config["WORKSPACE_SILICON_BIN"] = \
@@ -115,6 +117,7 @@ def pre_build(build_config, build_type="DEBUG", silent=False, toolchain=None):
     config["PACKAGES_PATH"] = config["WORKSPACE_PLATFORM"]
     config["PACKAGES_PATH"] += os.pathsep + config["WORKSPACE_SILICON"]
     config["PACKAGES_PATH"] += os.pathsep + config["WORKSPACE_SILICON_BIN"]
+    config["PACKAGES_PATH"] += os.pathsep + config["WORKSPACE_DRIVERS"]
     config["PACKAGES_PATH"] += os.pathsep + \
         os.path.join(config["WORKSPACE"], "FSP")
     config["PACKAGES_PATH"] += os.pathsep + \
@@ -192,6 +195,31 @@ def pre_build(build_config, build_type="DEBUG", silent=False, toolchain=None):
     _, _, result, return_code = execute_script(command, config, shell=shell)
     if return_code != 0:
         build_failed(config)
+
+    #
+    # build platform silicon tools
+    #
+    # save the current workspace
+    saved_work_directory = config["WORKSPACE"]
+    # change the workspace to silicon tools directory
+    config["WORKSPACE"] = os.path.join(config["WORKSPACE_SILICON"], "Tools")
+
+    command = ["nmake"]
+    if os.name == "posix":  # linux
+        command = ["make"]
+        # add path to generated FitGen binary to
+        # environment path variable
+        config["PATH"] += os.pathsep + \
+                          os.path.join(config["BASE_TOOLS_PATH"],
+                                       "Source", "C", "bin")
+
+    # build the silicon tools
+    _, _, result, return_code = execute_script(command, config, shell=shell)
+    if return_code != 0:
+        build_failed(config)
+
+    # restore WORKSPACE environment variable
+    config["WORKSPACE"] = saved_work_directory
 
     config["SILENT_MODE"] = 'TRUE' if silent else 'FALSE'
 
@@ -401,6 +429,35 @@ def post_build(config):
     :returns: nothing
     """
     print("Running post_build to complete the build process.")
+    board_fd = config["BOARD"].upper()
+    final_fd = os.path.join(config["BUILD_DIR_PATH"], "FV",
+                            "{}.fd".format(board_fd))
+
+    if config["BIOS_INFO_GUID"]:
+        # Generate the fit table
+        print("Generating FIT ...")
+        if os.path.isfile(final_fd):
+            temp_fd = os.path.join(config["BUILD_DIR_PATH"], "FV",
+                                   "{}_.fd".format(board_fd))
+            shell = True
+            command = ["FitGen", "-D",
+                       final_fd, temp_fd, "-NA",
+                       "-I", config["BIOS_INFO_GUID"]]
+
+            if os.name == "posix": # linux
+                shell = False
+
+            _, _, result, return_code = execute_script(command, config, shell=shell)
+            if return_code != 0:
+                print("Error while generating fit")
+            else:
+                # copy output to final binary
+                shutil.copyfile(temp_fd, final_fd)
+                # remove temp file
+                os.remove(temp_fd)
+        else:
+            print("{} does not exist".format(final_fd))
+            # remove temp file
 
     # Additional build scripts for this platform
     result = post_build_ex(config)
@@ -423,6 +480,9 @@ def post_build(config):
             except OSError:
                 pass
 
+    print("Done")
+    if os.path.isfile(final_fd):
+        print("Fd file can be found at {}".format(final_fd))
 
 def build_failed(config):
     """Displays results when build fails
