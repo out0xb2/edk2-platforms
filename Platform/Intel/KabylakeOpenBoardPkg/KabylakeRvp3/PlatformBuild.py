@@ -26,7 +26,7 @@ class CommonPlatform():
     TargetsSupported = ("DEBUG", "RELEASE", "NOOPT")
     Scopes = ('edk2-build','kbl')
     WorkspaceRoot = os.path.realpath(os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..\..\..\..\.."))
+        os.path.dirname(os.path.abspath(__file__)), "..\..\..\.."))
 
 
     # ####################################################################################### #
@@ -53,7 +53,7 @@ class SettingsManager(UpdateSettingsManager, SetupSettingsManager):
         '''
         rs = []
         rs.append(RequiredSubmodule(
-            "CryptoPkg/Library/OpensslLib/openssl", False))
+            "EDK2", True))
         return rs
 
     def SetArchitectures(self, list_of_requested_architectures):
@@ -109,7 +109,7 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
 
     def GetPackagesPath(self):
         ''' Return a list of workspace relative paths that should be mapped as edk2 PackagesPath '''
-        return ['Platforms\Platform\Intel','Platforms\Silicon\Intel']
+        return ['Platform\Intel','Silicon\Intel','EDK2']
 
     def GetActiveScopes(self):
         ''' return tuple containing scopes that should be active for this process '''
