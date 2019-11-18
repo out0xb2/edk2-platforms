@@ -91,6 +91,8 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
         self.env.SetValue("ACTIVE_PLATFORM", "KabylakeOpenBoardPkg/KabylakeRvp3/OpenBoardPkg.dsc",  "Platform Hardcoded")
         self.env.SetValue("TARGET_ARCH",     " ".join(CommonPlatform.ArchSupported),                "Platform Hardcoded")
         self.env.SetValue("TOOL_CHAIN_TAG",  "VS2017",                                              "Default tool chain")
+        self.env.SetValue("BLD_*_PROJECT",   "KabylakeOpenBoardPkg/KabylakeRvp3",                   "Platform Hardcoded")
+        self.env.SetValue("BLD_*_PLATFORM_BOARD_PACKAGE", "KabylakeOpenBoardPkg",                   "Platform Hardcoded")
         return 0
 
     def AddCommandLineOptions(self, parserObj):
@@ -109,7 +111,15 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
 
     def GetPackagesPath(self):
         ''' Return a list of workspace relative paths that should be mapped as edk2 PackagesPath '''
-        return ['Platform\Intel','Silicon\Intel','EDK2']
+        paths = [
+            'EDK2',
+            'Platform\Intel',
+            'Silicon\Intel',
+            'Silicon\Intel\FSPs',
+            'EDK2-NON-OSI\Silicon\Intel'
+            ]
+        fullPaths = [ os.path.join(CommonPlatform.WorkspaceRoot, l) for l in paths ] 
+        return fullPaths
 
     def GetActiveScopes(self):
         ''' return tuple containing scopes that should be active for this process '''
@@ -118,7 +128,7 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
     def GetName(self):
         ''' Get the name of the repo, platform, or product being build '''
         ''' Used for naming the log file, among others '''
-        return "OvmfPkg"
+        return "KabyLakeRvp3"
 
     def GetLoggingLevel(self, loggerType):
         ''' Get the logging level for a given type

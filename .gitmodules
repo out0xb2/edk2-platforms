@@ -2,3 +2,9 @@
 	path = EDK2
 	url = https://github.com/out0xb2/edk2.git
 	branch = feature/py_platforms
+[submodule "Silicon\\Intel\\FSPs"]
+	path = Silicon\\Intel\\FSPs
+	url = https://github.com/IntelFsp/FSP.git
+[submodule "EDK2-NON-OSI"]
+	path = EDK2-NON-OSI
+	url = https://github.com/tianocore/edk2-non-osi.git
