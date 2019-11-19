@@ -12,6 +12,7 @@ from edk2toolext.environment.uefi_build import UefiBuilder
 from edk2toolext.invocables.edk2_platform_build import BuildSettingsManager
 from edk2toolext.invocables.edk2_setup import SetupSettingsManager, RequiredSubmodule
 from edk2toolext.invocables.edk2_update import UpdateSettingsManager
+from edk2toollib.utility_functions import RunPythonScript
 
 
     # ####################################################################################### #
@@ -21,12 +22,20 @@ class CommonPlatform():
     ''' Common settings for this platform.  Define static data here and use
         for the different parts of stuart
     '''
-    PackagesSupported = ("KabylakeOpenBoardPkg",)
-    ArchSupported = ("IA32", "X64")
-    TargetsSupported = ("DEBUG", "RELEASE", "NOOPT")
-    Scopes = ('edk2-build','kbl')
     WorkspaceRoot = os.path.realpath(os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "..\..\..\.."))
+    ProductName = "KblRvp3"
+    BoardPackage = "KabylakeOpenBoardPkg"
+    Project = "KabylakeRvp3"
+    Platform = "OpenBoardPkg.dsc"
+    PackagesSupported = (BoardPackage,)
+    ArchSupported = ("IA32", "X64")
+    TargetsSupported = ("DEBUG", "RELEASE", "NOOPT")
+    Scopes = ('edk2-build','kbl','intel_fsp')
+    FspBinPath = "Silicon/Intel/FSPS/AmberLakeFspBinPkg/"
+    FspRebaseScript = os.path.join("Platform","Intel","MinPlatformPkg","Tools","Fsp","RebaseFspBinBaseAddress.py")
+    FlashMap = os.path.join("Platform","Intel",BoardPackage,Project,
+                            "Include","Fdf","FlashMapInclude.fdf")
 
 
     # ####################################################################################### #
@@ -87,12 +96,15 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
 
     def SetPlatformEnv(self):
         logging.debug("PlatformBuilder SetPlatformEnv")
-        self.env.SetValue("PRODUCT_NAME",    "KblRvp3",                                             "Platform Hardcoded")
-        self.env.SetValue("ACTIVE_PLATFORM", "KabylakeOpenBoardPkg/KabylakeRvp3/OpenBoardPkg.dsc",  "Platform Hardcoded")
-        self.env.SetValue("TARGET_ARCH",     " ".join(CommonPlatform.ArchSupported),                "Platform Hardcoded")
-        self.env.SetValue("TOOL_CHAIN_TAG",  "VS2017",                                              "Default tool chain")
-        self.env.SetValue("BLD_*_PROJECT",   "KabylakeOpenBoardPkg/KabylakeRvp3",                   "Platform Hardcoded")
-        self.env.SetValue("BLD_*_PLATFORM_BOARD_PACKAGE", "KabylakeOpenBoardPkg",                   "Platform Hardcoded")
+        Project = "/".join((CommonPlatform.BoardPackage,CommonPlatform.Project))
+        Platform = "/".join((Project,CommonPlatform.Platform))
+        self.env.SetValue("PRODUCT_NAME",                 CommonPlatform.ProductName,             "Platform Hardcoded")
+        self.env.SetValue("TARGET_ARCH",                  " ".join((CommonPlatform.ArchSupported)), "Platform Hardcoded")
+        self.env.SetValue("BLD_*_PLATFORM_BOARD_PACKAGE", CommonPlatform.BoardPackage,            "Platform Hardcoded")
+        self.env.SetValue("BLD_*_PROJECT",                Project,                                "Platform Hardcoded")
+        self.env.SetValue("ACTIVE_PLATFORM",              Platform,                               "Platform Hardcoded")
+        self.env.SetValue("FSP_BINARY_PATH",              CommonPlatform.FspBinPath,              "Platform Hardcoded")
+        self.env.SetValue("TOOL_CHAIN_TAG",               "VS2017",                               "Default tool chain")
         return 0
 
     def AddCommandLineOptions(self, parserObj):
@@ -128,7 +140,7 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
     def GetName(self):
         ''' Get the name of the repo, platform, or product being build '''
         ''' Used for naming the log file, among others '''
-        return "KabyLakeRvp3"
+        return CommonPlatform.ProductName
 
     def GetLoggingLevel(self, loggerType):
         ''' Get the logging level for a given type
@@ -140,7 +152,9 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
         return logging.DEBUG
 
     def PlatformPreBuild(self):
-        return 0
+        params = " ".join((CommonPlatform.FlashMap, CommonPlatform.FspBinPath, "Fsp.fd", "0x0"))
+        ret = RunPythonScript( CommonPlatform.FspRebaseScript, params)
+        return ret
 
     def PlatformPostBuild(self):
         return 0
