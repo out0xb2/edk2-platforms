@@ -12,7 +12,7 @@
 ##
 {
   "id": "iasl-kbl-1",
-  "scope": "kbl",
+  "scope": "openkbl_iasl",
   "type": "nuget",
   "name": "iasl",
   "source": "https://api.nuget.org/v3/index.json",

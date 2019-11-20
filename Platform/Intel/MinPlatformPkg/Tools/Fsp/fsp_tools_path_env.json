@@ -1,0 +1,4 @@
+{
+  "scope": "intel_fsp",
+  "flags": ["set_pypath","set_path"]
+}
