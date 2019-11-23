@@ -1,6 +1,6 @@
 # Pytools for Intel Platforms
 
-## Prerequisates
+## Prerequisites
 
 * [Python 3.x is installed](https://www.python.org/downloads/)
 * [git is installed/configured](https://git-scm.com/download/)
@@ -11,10 +11,13 @@
 * Clone `https://github.com/out0xb2/edk2-platforms.git` and checkout "feature/py_platforms"
 * Consider creating & using a [Python Virtual Environment](https://docs.python.org/3/library/venv.html) ([Example](https://microsoft.github.io/mu/CodeDevelopment/prerequisites/#workspace-virtual-environment-setup-process))
 * Install Edk2-Pytools
-  * `pip install --upgrade edk2-pytool-extensions`
-* Ask Stuart (edk2-pytools) to perform one-time initialization of your workspace.  
-  * For the KabylakeRvp3: `stuart_setup -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py`
+  * `pip install -r Platform\Intel\KabylakeOpenBoardPkg\pip-requirements.txt`
+* Ask Stuart (edk2-pytools) to perform initialization of your workspace.  
+  * For the KabylakeRvp3:
+    * `stuart_setup -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py`
     * This initializes required submodules and platform dependencies such as iASL and NASM, note that manual install & setup of NASM and iASL is __not__ required
+    * `stuart_update -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py`
+    * This initializes the Pytools External Dependencies
 * Build BaseTools using "`python EDK2\BaseTools\Edk2ToolsBuild.py [-t <ToolChainTag>]`"
   * This replaces "`edksetup Rebuild`" from the classic build system
   * If you see an exception, such as FileNotFoundError, then you should specify a working ToolChainTag.  This should print a green `PROGRESS - Success`
@@ -26,9 +29,10 @@
 git clone https://github.com/out0xb2/edk2-platforms.git edk2-platforms-pytools -b feature/py_platforms
 python -m venv venv_edk2-pytools
 venv_edk2-pytools\Scripts\activate
-pip install --upgrade edk2-pytool-extensions
 cd edk2-platforms-pytools
+pip install -r Platform\Intel\KabylakeOpenBoardPkg\pip-requirements.txt
 stuart_setup -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py
+stuart_update -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py
 python EDK2\BaseTools\Edk2ToolsBuild.py -t VS2017
 ```
 
@@ -38,9 +42,12 @@ First set the `TOOL_CHAIN_TAG` environment variable or pass it on the commandlin
 
 `stuart_build -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py`
 
-## Update dependencies (when they change)
+## Re-Initialize & Update Submodules & Dependencies (when they change)
 
-`stuart_update -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py`
+```
+stuart_setup -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py
+stuart_update -c Platform\Intel\KabylakeOpenBoardPkg\KabylakeRvp3\PlatformBuild.py
+```
 
 NOTE: do this every time you change the Pytools dependencies or pull (which may bring dependency changes)
 
@@ -48,23 +55,35 @@ NOTE: do this every time you change the Pytools dependencies or pull (which may 
 
 * Platform/Intel/KabylakeOpenBoardPkg/KabylakeRvp3/PlatformBuild.py Platform Builder
   * Top-level build file defines the platform-specific build configuration
-  * Specifies "scopes" to activate matching Pytools plug-ins and dependencies
-  * Specifies submodules (who's versions are pinned via .gitmodules)
-    * stuart_setup & stuart_update use this to initialize/update the submodules
+  * Specifies submodule dependencies (consumed by stuart_setup)
+    * Versions are pinned via .gitmodules
+  * Specifies "scopes" to activate matching Pytools plug-ins and dependencies (consumed by stuart_update)
+  * Specifies build environment that is consumed by stuart_build
 * Platform/Intel/KabylakeOpenBoardPkg/iasl_ext_dep.yaml
-  * Defines a dependency on a ++specific version++ of iASL
+  * Defines a dependency on your *preferred* version of iASL
+  * Placed at Board Package level with the intention of sharing across all Kbl Open Board projects
   * scope: 'openkbl_iasl'
 * Platform/Intel/MinPlatformPkg/Tools/Fsp/fsp_tools_path_env.json Path Environment
-  * Adds Platform/Intel/MinPlatformPkg/Tools/Fsp/ to both the PATH and Python path during build
+  * Adds Platform/Intel/MinPlatformPkg/Tools/Fsp/ to the path during build
   * scope: 'intel_fsp'
+* EDK2/IntelFsp2Pkg/Tools/fsp_tools_path_env.json Path Environment
+  * Adds EDK2/IntelFsp2Pkg/Tools/ to the path during build
+  * scope: 'intel_fsp'
+
+### Intel Silicon Tools Plug-in
+
 * Silicon/Intel/Tools/Tools_plug_in.yaml
   * Declares the Intel Silicon Tools build plug-in
   * scope: 'intel_silicon_tools'
 * Silicon/Intel/Tools/IntelSiliconTools.py
-  * The actual Intel Silicon Tools build plug-in
+  * The Intel Silicon Tools plug-in implementation
   * During Pre-build it makes all Intel Silicon Tools (e.g. FitGen)
   * During Post-build it invokes FitGen
 
+#### DSC Modifications
+
+* Some modifications made to workaround PyTool issue [#47: DSC parser does not handle conditionals](https://github.com/tianocore/edk2-pytool-library/issues/47)
+
 ## References
 
-[Installing Pytools](https://github.com/tianocore/edk2-pytool-extensions/blob/master/docs/using.md#installing)
+[Using Pytools](https://github.com/tianocore/edk2-pytool-extensions/blob/master/docs/using.md)
