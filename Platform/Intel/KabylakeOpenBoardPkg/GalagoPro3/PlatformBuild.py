@@ -1,5 +1,5 @@
 ﻿# @file
-# Script to Build KBL RVP3 UEFI firmware
+# Script to Build UEFI for System 76 GalagoPro3
 #
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -24,7 +24,7 @@ class CommonPlatform():
     '''
     WorkspaceRoot = os.path.realpath(os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "..\..\..\.."))
-    ProductName = "KabylakeRvp3"
+    ProductName = "GalagoPro3"
     BoardPackage = "KabylakeOpenBoardPkg"
     ArchSupported = ("IA32", "X64")
     TargetsSupported = ("DEBUG", "RELEASE", "NOOPT")
@@ -97,17 +97,25 @@ class PlatformBuilder(UefiBuilder, BuildSettingsManager):
         self.env.SetValue("BLD_*_PROJECT", Project, "Platform Hardcoded")
         self.env.SetValue("ACTIVE_PLATFORM", ActivePlatform, "Platform Hardcoded")
         self.env.SetValue("FLASH_MAP_FDF",
-                          "Platform/Intel/KabylakeOpenBoardPkg/KabylakeRvp3/Include/Fdf/FlashMapInclude.fdf",
+                          "Platform/Intel/KabylakeOpenBoardPkg/GalagoPro3/Include/Fdf/FlashMapInclude.fdf",
                           "Platform Hardcoded")
+        self.env.SetValue("BIOS_SIZE_OPTION", "SIZE_70", "Platform Hardcoded")
         self.env.SetValue("FSP_WRAPPER_BUILD", "TRUE", "Platform Hardcoded")
-        self.env.SetValue("FSP_BINARY_PATH", "Silicon/Intel/FSPS/AmberLakeFspBinPkg/", "Platform Hardcoded")
-        self.env.SetValue("WORKSPACE_SILICON", "Silicon\Intel\Tools", "Default tool chain")
-        self.env.SetValue("BIOS_INFO_GUID", "C83BCE0E-6F16-4D3C-8D9F-4D6F5A032929", "Default tool chain")
+        self.env.SetValue("FSP_BINARY_BUILD", "FALSE", "Platform Hardcoded")
+        self.env.SetValue("FSP_BINARY_PATH", "Silicon/Intel/FSPS/KabylakeFspBinPkg/", "Platform Hardcoded")
+        self.env.SetValue("WORKSPACE_SILICON", "Silicon\Intel\Tools", "Platform Hardcoded")
+        self.env.SetValue("WORKSPACE_PLATFORM_BIN", 
+                          "edk2-non-osi/Platform/Intel/KabylakeOpenBoardBinPkg",
+                          "Platform Hardcoded")
+        self.env.SetValue("BIOS_INFO_GUID", "C83BCE0E-6F16-4D3C-8D9F-4D6F5A032929", "Platform Hardcoded")
         self.env.SetValue("TARGET_ARCH", " ".join((CommonPlatform.ArchSupported)), "Platform Hardcoded")
         self.env.SetValue("TOOL_CHAIN_TAG", "VS2017", "Default tool chain")
         self.env.SetValue("BOARD_PKG_PCD_DSC",
-                          "KabylakeOpenBoardPkg/KabylakeRvp3/OpenBoardPkgPcd.dsc",
-                          "Default tool chain")
+                          "KabylakeOpenBoardPkg/GalagoPro3/OpenBoardPkgPcd.dsc",
+                          "Platform Hardcoded")
+        # JJC HACK: use John's hack to pass PCDs on the commandline
+        pcds = " --pcd gIntelFsp2WrapperTokenSpaceGuid.PcdFspModeSelection=1"
+        self.env.SetValue("BLD_*_DUMMY_PCDS", "DUMMY" + pcds, "Platorm HardcodedHack") 
         return 0
 
     def AddCommandLineOptions(self, parserObj):
@@ -131,7 +139,8 @@ class PlatformBuilder(UefiBuilder, BuildSettingsManager):
             'Platform\Intel',
             'Silicon\Intel',
             'Silicon\Intel\FSPs',
-            'EDK2-NON-OSI\Silicon\Intel'
+            'EDK2-NON-OSI\Silicon\Intel',
+            'EDK2-NON-OSI\Platform\Intel\KabylakeOpenBoardBinPkg' ########## HACK?  
         ]
         fullPaths = [os.path.join(CommonPlatform.WorkspaceRoot, l) for l in paths]
         return fullPaths

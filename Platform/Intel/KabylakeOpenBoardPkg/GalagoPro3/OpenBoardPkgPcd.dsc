@@ -136,28 +136,43 @@
   gMinPlatformPkgTokenSpaceGuid.PcdTpm2Enable|FALSE
   gMinPlatformPkgTokenSpaceGuid.PcdUefiSecureBootEnable|FALSE
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 1
+# JJC HACK BEGIN
+# workaround for https://github.com/tianocore/edk2-pytool-library/issues/47
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 1
+#   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterDebugInit|TRUE
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 2
+#   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterDebugInit|FALSE
+#   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterMemInit|TRUE
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 3
+#   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterMemInit|FALSE
+#   gMinPlatformPkgTokenSpaceGuid.PcdBootToShellOnly|TRUE
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 4
+#   gMinPlatformPkgTokenSpaceGuid.PcdBootToShellOnly|FALSE
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 5
+#   gMinPlatformPkgTokenSpaceGuid.PcdUefiSecureBootEnable|TRUE
+#   gMinPlatformPkgTokenSpaceGuid.PcdTpm2Enable|TRUE
+# !endif
+# 
   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterDebugInit|TRUE
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 2
   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterDebugInit|FALSE
   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterMemInit|TRUE
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 3
   gMinPlatformPkgTokenSpaceGuid.PcdStopAfterMemInit|FALSE
   gMinPlatformPkgTokenSpaceGuid.PcdBootToShellOnly|TRUE
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 4
   gMinPlatformPkgTokenSpaceGuid.PcdBootToShellOnly|FALSE
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 5
-  gMinPlatformPkgTokenSpaceGuid.PcdUefiSecureBootEnable|TRUE
-  gMinPlatformPkgTokenSpaceGuid.PcdTpm2Enable|TRUE
-!endif
+# workaround for https://github.com/tianocore/edk2-pytool-library/issues/47
+# JJC HACK END
 
 !if $(TARGET) == DEBUG
   gMinPlatformPkgTokenSpaceGuid.PcdSmiHandlerProfileEnable|TRUE
@@ -284,29 +299,42 @@
   gMinPlatformPkgTokenSpaceGuid.PcdPlatformEfiRtCodeMemorySize|0xE0
 !endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 1
+# JJC HACK BEGIN
+# workaround for https://github.com/tianocore/edk2-pytool-library/issues/47
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 1
+#   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 2
+#   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 3
+#   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x07, 0x03, 0x05, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 4
+#   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x07, 0x03, 0x05, 0x1F, 0x00, 0x0F, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 5
+#   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x0F, 0x07, 0x1F, 0x1F, 0x0F, 0x0F, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+# !endif
+# 
+# !if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 6
+#   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x0F, 0x07, 0x1F, 0x1F, 0x0F, 0x0F, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+# !endif
+
   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 2
   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 3
   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x07, 0x03, 0x05, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 4
   gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x07, 0x03, 0x05, 0x1F, 0x00, 0x0F, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-!endif
 
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage == 5
-  gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x0F, 0x07, 0x1F, 0x1F, 0x0F, 0x0F, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-!endif
-
-!if gMinPlatformPkgTokenSpaceGuid.PcdBootStage >= 6
-  gMinPlatformPkgTokenSpaceGuid.PcdTestPointIbvPlatformFeature|{0x03, 0x0F, 0x07, 0x1F, 0x1F, 0x0F, 0x0F, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-!endif
+# workaround for https://github.com/tianocore/edk2-pytool-library/issues/47
+# JJC HACK END
 
   ######################################
   # Board Configuration
